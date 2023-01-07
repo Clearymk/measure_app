@@ -35,6 +35,7 @@ class Database:
                                    "or full_launch_time is NULL")
         return cursor
 
+
     def query_no_cpu_consumption_app_pairs(self):
         cursor = self.conn.execute("SELECT lite_app_id, full_app_id "
                                    "FROM lite_app "

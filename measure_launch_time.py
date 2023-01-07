@@ -2,7 +2,7 @@ import os
 import re
 import subprocess
 
-import sql_lite_database
+import database
 
 process_manifest_path = "/Users/clear/PycharmProjects/measure_app/lib/ProcessManifest.jar"
 app_pair_path = "/Volumes/Data/backup/"
@@ -53,7 +53,7 @@ def get_app_launch_time_launch_app(app_id, launch_activity):
 
 
 if __name__ == '__main__':
-    db = database.Database()
+    db = database.DataBase()
 
     for app_pair in db.query_no_launch_time_app_pairs():
 

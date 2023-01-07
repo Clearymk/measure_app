@@ -20,6 +20,27 @@ class DataBase(object):
         cursor.execute(insert_sql, (lite_app_id, full_app_id))
         self.mysql.commit()
 
+    def update_lite_launch_time(self, lite_app_id, lite_launch_time):
+        insert_sql = "update lite_app.app_measure set lite_launch_time = %s where lite_app_id = %s"
+        cursor = self.mysql.cursor()
+        cursor.execute(insert_sql, (lite_launch_time, lite_app_id))
+        self.mysql.commit()
+
+    def update_full_launch_time(self, lite_app_id, full_launch_time):
+        insert_sql = "update lite_app.app_measure set full_launch_time = %s where lite_app_id = %s"
+        cursor = self.mysql.cursor()
+        cursor.execute(insert_sql, (full_launch_time, lite_app_id))
+        self.mysql.commit()
+
+    def query_no_launch_time_app_pairs(self):
+        cursor = self.mysql.cursor()
+        cursor.execute("select lite_app_id, full_app_id "
+                       "from lite_app.app_measure  "
+                       "where lite_launch_time is null "
+                       "or full_launch_time is null ")
+
+        return cursor.fetchall()
+
     def query_no_resource_consumption_app_pairs(self):
         cursor = self.mysql.cursor()
         cursor.execute("select lite_app_id, full_app_id "
