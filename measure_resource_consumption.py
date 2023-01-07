@@ -4,7 +4,7 @@ import re
 import subprocess
 import time
 
-import database
+import sql_lite_database
 
 process_manifest_path = "/Users/clear/PycharmProjects/measure_app/lib/ProcessManifest.jar"
 app_pair_path = "/Volumes/Data/backup/"
@@ -89,8 +89,8 @@ if __name__ == '__main__':
                 lite_memory_count, lite_cpu_count = record_resource_consumption(lite_app_id)
                 uninstall_apk(lite_app_id)
                 print("{} memory cost is {}, cpu cost is {}".format(lite_app_id, lite_memory_count, lite_cpu_count))
-                db.update_lite_memory_consumption(lite_app_id, lite_memory_count)
-                db.update_lite_cpu_consumption(lite_app_id, lite_cpu_count)
+                db.update_lite_memory_usage(lite_app_id, lite_memory_count)
+                db.update_lite_cpu_time(lite_app_id, lite_cpu_count)
 
             if install_apk(full_app_path, full_app_id):
                 time_count = 0
@@ -107,7 +107,7 @@ if __name__ == '__main__':
                 full_memory_count, full_cpu_count = record_resource_consumption(full_app_id)
                 uninstall_apk(full_app_id)
                 print("{} memory cost is {}, cpu cost is {}".format(full_app_id, full_memory_count, full_cpu_count))
-                db.update_full_memory_consumption(lite_app_id, full_memory_count)
+                db.update_full_memory_usage(lite_app_id, full_memory_count)
                 db.update_full_cpu_consumption(lite_app_id, full_cpu_count)
         except Exception as e:
             print("find error!!")

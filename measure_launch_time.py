@@ -2,7 +2,7 @@ import os
 import re
 import subprocess
 
-import database
+import sql_lite_database
 
 process_manifest_path = "/Users/clear/PycharmProjects/measure_app/lib/ProcessManifest.jar"
 app_pair_path = "/Volumes/Data/backup/"
