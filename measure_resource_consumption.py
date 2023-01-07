@@ -1,6 +1,8 @@
+import math
 import os
 import re
 import subprocess
+import time
 
 import database
 
@@ -22,10 +24,9 @@ def install_apk(apk_path, app_id):
         return False
 
 
-def run_by_monkey(app_id):
-    monkey_cmd = "adb shell monkey -p {} --throttle 100 9000"
-    p = subprocess.Popen(monkey_cmd.format(app_id), shell=True)
-    p.wait()
+def run_by_monkey(app_id, count):
+    monkey_cmd = "adb shell monkey -p {}  --pct-touch 40 --ignore-crashes --ignore-timeouts --throttle 100 {}"
+    subprocess.call(monkey_cmd.format(app_id, count), shell=True)
 
 
 def record_resource_consumption(app_id):
@@ -74,7 +75,17 @@ if __name__ == '__main__':
 
         try:
             if install_apk(lite_app_path, lite_app_id):
-                run_by_monkey(lite_app_id)
+                time_count = 0
+                while True:
+                    start_time = time.time()
+                    run_by_monkey(lite_app_id, (900 - math.floor(time_count)) * 10)
+                    end_time = time.time()
+
+                    time_count += end_time - start_time
+
+                    if time_count > 900:
+                        break
+                print("spend time count", time_count)
                 lite_memory_count, lite_cpu_count = record_resource_consumption(lite_app_id)
                 uninstall_apk(lite_app_id)
                 print("{} memory cost is {}, cpu cost is {}".format(lite_app_id, lite_memory_count, lite_cpu_count))
@@ -82,13 +93,24 @@ if __name__ == '__main__':
                 db.update_lite_cpu_consumption(lite_app_id, lite_cpu_count)
 
             if install_apk(full_app_path, full_app_id):
-                run_by_monkey(full_app_id)
+                time_count = 0
+                while True:
+                    start_time = time.time()
+                    run_by_monkey(full_app_id, (900 - math.floor(time_count)) * 10)
+                    end_time = time.time()
+
+                    time_count += end_time - start_time
+
+                    if time_count > 900:
+                        break
+                print("spend time count", time_count)
                 full_memory_count, full_cpu_count = record_resource_consumption(full_app_id)
                 uninstall_apk(full_app_id)
                 print("{} memory cost is {}, cpu cost is {}".format(full_app_id, full_memory_count, full_cpu_count))
                 db.update_full_memory_consumption(lite_app_id, full_memory_count)
                 db.update_full_cpu_consumption(lite_app_id, full_cpu_count)
         except Exception as e:
+            print("find error!!")
             print(e)
 
         print("finish process {}".format(lite_app_id))
