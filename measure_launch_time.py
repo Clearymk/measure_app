@@ -1,16 +1,15 @@
 import os
 import re
 import subprocess
-import sqlite3
 
 import database
 
-process_manifest_path = "D:\\ProcessManifest.jar"
-app_pair_path = "D:\\PyCharm 2021.2.1\\code\\lint_full_compare\\download\\download_file"
+process_manifest_path = "/Users/clear/PycharmProjects/measure_app/lib/ProcessManifest.jar"
+app_pair_path = "/Volumes/Data/backup/"
 
 
 def install_apk(apk_path, app_id):
-    p = subprocess.Popen("adb install \"{}\"".format(apk_path))
+    p = subprocess.Popen("adb install {}".format(apk_path), shell=True)
     p.wait()
 
     res = os.popen("adb shell pm list packages -3").readlines()
@@ -24,7 +23,7 @@ def install_apk(apk_path, app_id):
 
 
 def uninstall_apk(app_id):
-    p = subprocess.Popen("adb uninstall \"{}\"".format(app_id))
+    p = subprocess.Popen("adb uninstall {}".format(app_id), shell=True)
     p.wait()
 
     res = os.popen("adb shell pm list packages -3").readlines()
@@ -38,7 +37,7 @@ def uninstall_apk(app_id):
 
 
 def find_app_main_activity(app_path):
-    res = os.popen("java -jar \"{}\" \"{}\"".format(process_manifest_path, app_path)).readlines()
+    res = os.popen("java -jar {} {}".format(process_manifest_path, app_path)).readlines()
     return res[0].strip()
 
 
@@ -46,7 +45,7 @@ def get_app_launch_time_launch_app(app_id, launch_activity):
     p = subprocess.Popen("adb shell am start -S -W {}/{} "
                          "-c android.intent.category.LAUNCHER "
                          "-a android.intent.action.MAIN".format(app_id, launch_activity),
-                         stdout=subprocess.PIPE)
+                         stdout=subprocess.PIPE, shell=True)
     output = p.communicate()[0].decode("utf-8")
     p.wait()
     reg = re.compile(r'WaitTime: (?P<time>\d+)')
@@ -55,7 +54,6 @@ def get_app_launch_time_launch_app(app_id, launch_activity):
 
 if __name__ == '__main__':
     db = database.Database()
-    os.chdir("D:\\AndroidSDK\\platform-tools")
 
     for app_pair in db.query_no_launch_time_app_pairs():
 

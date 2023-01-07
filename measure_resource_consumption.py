@@ -4,12 +4,12 @@ import subprocess
 
 import database
 
-process_manifest_path = "D:\\ProcessManifest.jar"
-app_pair_path = "D:\\PyCharm 2021.2.1\\code\\lint_full_compare\\download\\download_file"
+process_manifest_path = "/Users/clear/PycharmProjects/measure_app/lib/ProcessManifest.jar"
+app_pair_path = "/Volumes/Data/backup/"
 
 
 def install_apk(apk_path, app_id):
-    p = subprocess.Popen("adb install \"{}\"".format(apk_path))
+    p = subprocess.Popen("adb install {}".format(apk_path), shell=True)
     p.wait()
 
     res = os.popen("adb shell pm list packages -3").readlines()
@@ -23,8 +23,8 @@ def install_apk(apk_path, app_id):
 
 
 def run_by_monkey(app_id):
-    monkey_cmd = "monkey -p {} --throttle 100 9000"
-    p = subprocess.Popen(monkey_cmd.format(app_id))
+    monkey_cmd = "adb shell monkey -p {} --throttle 100 9000"
+    p = subprocess.Popen(monkey_cmd.format(app_id), shell=True)
     p.wait()
 
 
@@ -35,7 +35,7 @@ def record_resource_consumption(app_id):
     memory_consumption = reg.findall(res)[0][0]
     pid = reg.findall(res)[0][-1][4:]
 
-    cpu_cmd = "ps -p {} -o TIME"
+    cpu_cmd = "adb shell ps -p {} -o TIME"
     res = ""
     for line in os.popen(cpu_cmd.format(pid)).readlines():
         res += line
@@ -46,7 +46,7 @@ def record_resource_consumption(app_id):
 
 
 def uninstall_apk(app_id):
-    p = subprocess.Popen("adb uninstall \"{}\"".format(app_id))
+    p = subprocess.Popen("adb uninstall {}".format(app_id), shell=True)
     p.wait()
 
     res = os.popen("adb shell pm list packages -3").readlines()
@@ -61,7 +61,6 @@ def uninstall_apk(app_id):
 
 if __name__ == '__main__':
     db = database.Database()
-    os.chdir("D:\\AndroidSDK\\platform-tools")
 
     for app_pair in db.query_no_resource_consumption_app_pairs():
 
@@ -73,19 +72,24 @@ if __name__ == '__main__':
 
         print("start process {}".format(lite_app_id))
 
-        if install_apk(lite_app_path, lite_app_id):
-            run_by_monkey(lite_app_id)
-            lite_memory_count, lite_cpu_count = record_resource_consumption(lite_app_id)
-            uninstall_apk(lite_app_id)
-            db.update_lite_memory_consumption(lite_app_id, lite_memory_count)
-            db.update_lite_cpu_consumption(lite_app_id, lite_cpu_count)
+        try:
+            if install_apk(lite_app_path, lite_app_id):
+                run_by_monkey(lite_app_id)
+                lite_memory_count, lite_cpu_count = record_resource_consumption(lite_app_id)
+                uninstall_apk(lite_app_id)
+                print("{} memory cost is {}, cpu cost is {}".format(lite_app_id, lite_memory_count, lite_cpu_count))
+                db.update_lite_memory_consumption(lite_app_id, lite_memory_count)
+                db.update_lite_cpu_consumption(lite_app_id, lite_cpu_count)
 
-        if install_apk(full_app_path, full_app_id):
-            run_by_monkey(lite_app_id)
-            full_memory_count, full_cpu_count = record_resource_consumption(full_app_id)
-            uninstall_apk(full_app_id)
-            db.update_full_memory_consumption(lite_app_id, full_memory_count)
-            db.update_full_cpu_consumption(lite_app_id, full_cpu_count)
+            if install_apk(full_app_path, full_app_id):
+                run_by_monkey(full_app_id)
+                full_memory_count, full_cpu_count = record_resource_consumption(full_app_id)
+                uninstall_apk(full_app_id)
+                print("{} memory cost is {}, cpu cost is {}".format(full_app_id, full_memory_count, full_cpu_count))
+                db.update_full_memory_consumption(lite_app_id, full_memory_count)
+                db.update_full_cpu_consumption(lite_app_id, full_cpu_count)
+        except Exception as e:
+            print(e)
 
         print("finish process {}".format(lite_app_id))
         print("------------")
