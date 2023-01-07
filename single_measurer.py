@@ -80,7 +80,7 @@ class SingleMeasurer:
             time_count = 0
             while True:
                 start_time = time.time()
-                self.run_by_monkey(lite_app_id, 900 - int(round(time_count, 1) * 10))
+                self.run_by_monkey(lite_app_id, 9000 - int(round(time_count, 1) * 10))
                 end_time = time.time()
 
                 time_count += end_time - start_time
@@ -99,14 +99,15 @@ class SingleMeasurer:
         if self.install_apk(full_app_path, full_app_id):
             time_count = 0
             while True:
+                print("time count:", time_count)
+                if time_count > 900:
+                    break
+
                 start_time = time.time()
                 self.run_by_monkey(full_app_id, 900 - int(round(time_count, 1) * 10))
                 end_time = time.time()
 
                 time_count += end_time - start_time
-
-                if time_count > 900:
-                    break
             print("spend time count", time_count)
             full_memory_count, full_cpu_count = self.record_resource_consumption(full_app_id)
             self.uninstall_apk(full_app_id)
