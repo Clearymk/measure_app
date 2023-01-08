@@ -79,3 +79,10 @@ class DataBase(object):
                        "SET full_cpu_time = %s "
                        "WHERE lite_app_id = %s", (full_cpu_time, lite_app_id))
         self.mysql.commit()
+
+    def update_xapk(self, lite_app_id, app_type):
+        cursor = self.mysql.cursor()
+        cursor.execute("UPDATE lite_app.app_measure "
+                       "SET xapk = %s "
+                       "WHERE lite_app_id = %s", (app_type, lite_app_id))
+        self.mysql.commit()

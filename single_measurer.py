@@ -79,14 +79,14 @@ class SingleMeasurer:
         if self.install_apk(lite_app_path, lite_app_id):
             time_count = 0
             while True:
+                if time_count > 900:
+                    break
+
                 start_time = time.time()
                 self.run_by_monkey(lite_app_id, 9000 - int(round(time_count, 1) * 10))
                 end_time = time.time()
 
                 time_count += end_time - start_time
-
-                if time_count > 900:
-                    break
             print("spend time count", time_count)
             lite_memory_count, lite_cpu_count = self.record_resource_consumption(lite_app_id)
             self.uninstall_apk(lite_app_id)
@@ -94,6 +94,7 @@ class SingleMeasurer:
             self.db.update_lite_memory_usage(lite_app_id, lite_memory_count)
             self.db.update_lite_cpu_time(lite_app_id, lite_cpu_count)
         else:
+            self.db.update_xapk(lite_app_id, 1)
             return
 
         if self.install_apk(full_app_path, full_app_id):
@@ -104,7 +105,7 @@ class SingleMeasurer:
                     break
 
                 start_time = time.time()
-                self.run_by_monkey(full_app_id, 900 - int(round(time_count, 1) * 10))
+                self.run_by_monkey(full_app_id, 9000 - int(round(time_count, 1) * 10))
                 end_time = time.time()
 
                 time_count += end_time - start_time
@@ -115,6 +116,7 @@ class SingleMeasurer:
             self.db.update_full_memory_usage(lite_app_id, full_memory_count)
             self.db.update_full_cpu_consumption(lite_app_id, full_cpu_count)
         else:
+            self.db.update_xapk(lite_app_id, 2)
             return
 
     def check_emulator(self):

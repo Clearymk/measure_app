@@ -46,7 +46,7 @@ class BatchMeasurer:
             download_queue.put([app_pair[0], app_pair[1]])
 
         # set max thread and start each thread
-        for i in range(2):
+        for i in range(4):
             thread = threading.Thread(target=self.worker, args=(device_ids[i],))
             thread.start()
             self.threads.append(thread)
