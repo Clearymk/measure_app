@@ -7,7 +7,7 @@ import traceback
 import database
 
 
-class SingleMeasurer:
+class SingleChlsMeasurer:
     def __init__(self, device_id, device_name, app_pair):
         self.device_id = device_id
         self.device_name = device_name
@@ -82,50 +82,38 @@ class SingleMeasurer:
 
         print("start process {}".format(lite_app_id))
 
-        if self.install_apk(lite_app_path, lite_app_id):
-            time_count = 0
-            while True:
-                if time_count > self.run_time / 10:
-                    break
+        self.install_apk(lite_app_path, lite_app_id)
+        time_count = 0
+        while True:
+            if time_count > self.run_time / 10:
+                break
 
-                start_time = time.time()
-                self.run_by_monkey(lite_app_id, self.run_time - int(round(time_count, 1) * 10))
-                end_time = time.time()
+            start_time = time.time()
+            self.run_by_monkey(lite_app_id, self.run_time - int(round(time_count, 1) * 10))
+            end_time = time.time()
 
-                time_count += end_time - start_time
-            print("spend time count", time_count)
-            # lite_memory_count, lite_cpu_count = self.record_resource_consumption(lite_app_id)
-            self.uninstall_apk(lite_app_id)
-            # print("{} memory cost is {}, cpu cost is {}".format(lite_app_id, lite_memory_count, lite_cpu_count))
-            # self.db.update_lite_memory_usage(lite_app_id, lite_memory_count)
-            # self.db.update_lite_cpu_time(lite_app_id, lite_cpu_count)
-        else:
-            self.db.update_xapk(lite_app_id, 1)
-            return
+            time_count += end_time - start_time
+        print("spend time count", time_count)
+        self.uninstall_apk(lite_app_id)
+        self.get_charles_result(lite_app_id, lite_app_id)
 
-        if self.install_apk(full_app_path, full_app_id):
-            time_count = 0
-            while True:
-                print("time count:", time_count)
-                if time_count > self.run_time / 10:
-                    break
+        self.install_apk(full_app_path, full_app_id)
+        time_count = 0
+        while True:
+            print("time count:", time_count)
+            if time_count > self.run_time / 10:
+                break
 
-                start_time = time.time()
-                self.run_by_monkey(full_app_id, self.run_time - int(round(time_count, 1) * 10))
-                end_time = time.time()
+            start_time = time.time()
+            self.run_by_monkey(full_app_id, self.run_time - int(round(time_count, 1) * 10))
+            end_time = time.time()
 
-                time_count += end_time - start_time
-            print("spend time count", time_count)
-            # full_memory_count, full_cpu_count = self.record_resource_consumption(full_app_id)
-            self.uninstall_apk(full_app_id)
-            # print("{} memory cost is {}, cpu cost is {}".format(full_app_id, full_memory_count, full_cpu_count))
-            # self.db.update_full_memory_usage(lite_app_id, full_memory_count)
-            # self.db.update_full_cpu_consumption(lite_app_id, full_cpu_count)
-        else:
-            self.db.update_xapk(lite_app_id, 2)
-            return
+            time_count += end_time - start_time
+        print("spend time count", time_count)
+        self.uninstall_apk(full_app_id)
+        self.get_charles_result(lite_app_id, full_app_id)
 
-        # self.db.update_xapk(lite_app_id, None)
+        self.db.update_xapk(lite_app_id, 10)
 
     def get_charles_result(self, lite_app_id, app_id):
         charles_file = ""
@@ -139,12 +127,11 @@ class SingleMeasurer:
                     break
             time.sleep(5)
 
-        if not os.path.exists(os.path.join(self.charles_path, lite_app_id)):
-            os.mkdir(os.path.join(self.charles_path, lite_app_id))
+        if not os.path.exists(os.path.join(self.charles_path, "result", lite_app_id)):
+            os.mkdir(os.path.join(self.charles_path, "result", lite_app_id))
 
         shutil.move(os.path.join(self.charles_path, charles_file),
-                    os.path.join(self.charles_path, "result", app_id + ".chls"))
-
+                    os.path.join(self.charles_path, "result", lite_app_id, app_id + ".chls"))
 
     def check_emulator(self):
         output = ""

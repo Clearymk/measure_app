@@ -5,8 +5,9 @@ import threading
 
 import database
 from single_measurer import SingleMeasurer
+from single_chls_measurer import SingleChlsMeasurer
 
-MAX_THREAD = 4
+MAX_THREAD = 1
 download_queue = queue.Queue()
 device_ids = ["emulator-5554", "emulator-5556", "emulator-5558", "emulator-5560", "emulator-5562"]
 device_names = {"emulator-5554": "Pixel_4_API_30", "emulator-5556": "Pixel_4_API_30_2",
@@ -27,7 +28,7 @@ class BatchMeasurer:
         print(device_id, "started")
         while not download_queue.empty():
             app_pair = download_queue.get()
-            SingleMeasurer(device_id, device_names[device_id], app_pair)
+            SingleChlsMeasurer(device_id, device_names[device_id], app_pair)
             download_queue.task_done()
 
         os.popen("adb -s {} emu kill".format(device_id))
