@@ -8,9 +8,10 @@ from single_measurer import SingleMeasurer
 
 MAX_THREAD = 4
 download_queue = queue.Queue()
-device_ids = ["emulator-5554", "emulator-5556", "emulator-5558", "emulator-5560"]
+device_ids = ["emulator-5554", "emulator-5556", "emulator-5558", "emulator-5560", "emulator-5562"]
 device_names = {"emulator-5554": "Pixel_4_API_30", "emulator-5556": "Pixel_4_API_30_2",
-                "emulator-5558": "Pixel_4_API_30_3", "emulator-5560": "Pixel_4_API_30_4"}
+                "emulator-5558": "Pixel_4_API_30_3", "emulator-5560": "Pixel_4_API_30_4",
+                "emulator-5562": "Pixel_4_API_30_5"}
 
 
 class BatchMeasurer:
@@ -39,14 +40,14 @@ class BatchMeasurer:
             if "1\n" in res:
                 break
             else:
-                time.sleep(1)
+                time.sleep(5)
 
     def prepare(self):
-        for app_pair in self.db.query_no_resource_consumption_app_pairs():
+        for app_pair in self.db.query_re_run():
             download_queue.put([app_pair[0], app_pair[1]])
 
         # set max thread and start each thread
-        for i in range(4):
+        for i in range(MAX_THREAD):
             thread = threading.Thread(target=self.worker, args=(device_ids[i],))
             thread.start()
             self.threads.append(thread)

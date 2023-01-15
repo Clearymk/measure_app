@@ -55,7 +55,7 @@ def get_app_launch_time_launch_app(app_id, launch_activity):
 if __name__ == '__main__':
     db = database.DataBase()
 
-    for app_pair in db.query_no_launch_time_app_pairs():
+    for app_pair in db.query_re_run():
 
         lite_app_id = app_pair[0]
         full_app_id = app_pair[1]
@@ -65,18 +65,22 @@ if __name__ == '__main__':
 
         print("start process {}".format(lite_app_id))
 
-        if install_apk(lite_app_path, lite_app_id):
-            lite_app_launch_time = get_app_launch_time_launch_app(lite_app_id,
-                                                                  find_app_main_activity(lite_app_path))
-            uninstall_apk(lite_app_id)
-            print("lite app {} launch time is {}".format(lite_app_id, lite_app_launch_time))
-            db.update_lite_launch_time(lite_app_id, lite_app_launch_time)
+        try:
+            if install_apk(lite_app_path, lite_app_id):
+                lite_app_launch_time = get_app_launch_time_launch_app(lite_app_id,
+                                                                      find_app_main_activity(lite_app_path))
+                uninstall_apk(lite_app_id)
+                print("lite app {} launch time is {}".format(lite_app_id, lite_app_launch_time))
+                db.update_lite_launch_time(lite_app_id, lite_app_launch_time)
 
-        if install_apk(full_app_path, full_app_id):
-            full_app_launch_time = get_app_launch_time_launch_app(full_app_id,
-                                                                  find_app_main_activity(full_app_path))
-            uninstall_apk(full_app_id)
-            print("full app {} launch time is {}".format(full_app_id, full_app_launch_time))
-            db.update_full_launch_time(lite_app_id, full_app_launch_time)
+            if install_apk(full_app_path, full_app_id):
+                full_app_launch_time = get_app_launch_time_launch_app(full_app_id,
+                                                                      find_app_main_activity(full_app_path))
+                uninstall_apk(full_app_id)
+                print("full app {} launch time is {}".format(full_app_id, full_app_launch_time))
+                db.update_full_launch_time(lite_app_id, full_app_launch_time)
+
+        except Exception:
+            pass
         print("finish process {}".format(lite_app_id))
         print("------------")

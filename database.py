@@ -41,15 +41,43 @@ class DataBase(object):
 
         return cursor.fetchall()
 
+    def query_all_pairs(self):
+        cursor = self.mysql.cursor()
+        cursor.execute("select lite_app_id, full_app_id "
+                       "from lite_app.app_measure ")
+
+        return cursor.fetchall()
+
     def query_no_resource_consumption_app_pairs(self):
         cursor = self.mysql.cursor()
         cursor.execute("select lite_app_id, full_app_id "
                        "from lite_app.app_measure  "
-                       "where lite_cpu_time is null "
+                       "where (lite_cpu_time is null "
                        "or full_cpu_time is null "
                        "or lite_memory_usage is null "
-                       "or full_memory_usage is null")
+                       "or full_memory_usage is null)")
 
+        return cursor.fetchall()
+
+    def query_re_run(self):
+        cursor = self.mysql.cursor()
+        cursor.execute("select lite_app_id, full_app_id "
+                       "from lite_app.app_measure "
+                       "where xapk = 7")
+        return cursor.fetchall()
+
+    def launch_time_task(self):
+        cursor = self.mysql.cursor()
+        cursor.execute("select lite_app_id, full_app_id "
+                       "from lite_app.app_measure "
+                       "where (xapk != 3 and xapk != 5) or xapk is null;")
+        return cursor.fetchall()
+
+    def query_memory_bug(self):
+        cursor = self.mysql.cursor()
+        cursor.execute("select lite_app_id, full_app_id "
+                       "from lite_app.app_measure "
+                       "where xapk = 5")
         return cursor.fetchall()
 
     def update_lite_memory_usage(self, lite_app_id, lite_memory_usage):

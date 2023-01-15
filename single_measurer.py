@@ -2,7 +2,7 @@ import re
 import subprocess
 import time
 import os
-
+import traceback
 import database
 
 
@@ -14,11 +14,16 @@ class SingleMeasurer:
         self.db = database.DataBase()
         self.process_manifest_path = "/Users/clear/PycharmProjects/measure_app/lib/ProcessManifest.jar"
         self.app_pair_path = "/Volumes/Data/backup/"
+        self.run_time = 9000
 
         try:
             self.measurer()
         except Exception as e:
-            print(e)
+            with open("log.txt", "a+", encoding="utf8") as f:
+                f.write(self.app_pair[0] + "\n")
+                f.write(traceback.format_exc())
+                f.write("\n---------\n")
+                # self.db.update_xapk(self.app_pair[0], 5)
 
     def install_apk(self, apk_path, app_id):
         p = subprocess.Popen("adb -s {} install {}".format(self.device_id, apk_path), shell=True)
@@ -40,7 +45,7 @@ class SingleMeasurer:
     def record_resource_consumption(self, app_id):
         memory_cmd = "adb -s {} shell dumpsys meminfo | grep {}"
         res = os.popen(memory_cmd.format(self.device_id, app_id)).read()
-        reg = re.compile(r'(?P<memory>\d{1,3}(,\d{3})*K).+(?P<pid>pid \d+)')
+        reg = re.compile(r'(?P<memory>(?<!,)\b(\d{1,3}(?:,\d{3})*)[Kk]\b(?!,)).+(?P<pid>pid \d+)')
         memory_consumption = reg.findall(res)[0][0]
         pid = reg.findall(res)[0][-1][4:]
 
@@ -79,11 +84,11 @@ class SingleMeasurer:
         if self.install_apk(lite_app_path, lite_app_id):
             time_count = 0
             while True:
-                if time_count > 900:
+                if time_count > self.run_time / 10:
                     break
 
                 start_time = time.time()
-                self.run_by_monkey(lite_app_id, 9000 - int(round(time_count, 1) * 10))
+                self.run_by_monkey(lite_app_id, self.run_time - int(round(time_count, 1) * 10))
                 end_time = time.time()
 
                 time_count += end_time - start_time
@@ -94,18 +99,18 @@ class SingleMeasurer:
             self.db.update_lite_memory_usage(lite_app_id, lite_memory_count)
             self.db.update_lite_cpu_time(lite_app_id, lite_cpu_count)
         else:
-            self.db.update_xapk(lite_app_id, 1)
+            # self.db.update_xapk(lite_app_id, 1)
             return
 
         if self.install_apk(full_app_path, full_app_id):
             time_count = 0
             while True:
                 print("time count:", time_count)
-                if time_count > 900:
+                if time_count > self.run_time / 10:
                     break
 
                 start_time = time.time()
-                self.run_by_monkey(full_app_id, 9000 - int(round(time_count, 1) * 10))
+                self.run_by_monkey(full_app_id, self.run_time - int(round(time_count, 1) * 10))
                 end_time = time.time()
 
                 time_count += end_time - start_time
@@ -116,8 +121,10 @@ class SingleMeasurer:
             self.db.update_full_memory_usage(lite_app_id, full_memory_count)
             self.db.update_full_cpu_consumption(lite_app_id, full_cpu_count)
         else:
-            self.db.update_xapk(lite_app_id, 2)
+            # self.db.update_xapk(lite_app_id, 2)
             return
+
+        # self.db.update_xapk(lite_app_id, None)
 
     def check_emulator(self):
         output = ""
