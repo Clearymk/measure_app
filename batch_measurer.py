@@ -7,10 +7,10 @@ import database
 from single_measurer import SingleMeasurer
 from single_chls_measurer import SingleChlsMeasurer
 
-MAX_THREAD = 4
+MAX_THREAD = 2
 download_queue = queue.Queue()
 device_ids = ["emulator-5554", "emulator-5556", "emulator-5558", "emulator-5560", "emulator-5562"]
-device_names = {"emulator-5554": "Pixel_4_API_24", "emulator-5556": "Pixel_4_API_24_2",
+device_names = {"emulator-5554": "Pixel_4_API_30", "emulator-5556": "Pixel_4_API_30_2",
                 "emulator-5558": "Pixel_4_API_24_3", "emulator-5560": "Pixel_4_API_24_4",
                 "emulator-5562": "Pixel_4_API_30_5"}
 
@@ -31,7 +31,7 @@ class BatchMeasurer:
             SingleChlsMeasurer(device_id, device_names[device_id], app_pair, count)
             download_queue.task_done()
 
-        os.popen("adb -s {} emu kill".format(device_id))
+        # os.popen("adb -s {} emu kill".format(device_id))
 
     def start_emulator(self, device_name, device_id):
         os.popen("source ~/.bash_profile && emulator -avd {} -no-snapshot-load".format(device_name))
@@ -49,7 +49,7 @@ class BatchMeasurer:
 
         # set max thread and start each thread
         for i in range(MAX_THREAD):
-            thread = threading.Thread(target=self.worker, args=(device_ids[i], i))
+            thread = threading.Thread(target=self.worker, args=(device_ids[i], i + 1))
             thread.start()
             self.threads.append(thread)
 

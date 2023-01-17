@@ -41,7 +41,7 @@ class SingleChlsMeasurer:
 
     def run_by_monkey(self, app_id, count):
         monkey_cmd = "adb -s {} shell monkey -p {}  " \
-                     "--pct-syskeys 0 " \
+                     "--pct-syskeys 0 --pct-anyevent 0 --pct-motion 5 " \
                      "--ignore-crashes --ignore-timeouts --throttle 100 {}"
         subprocess.call(monkey_cmd.format(self.device_id, app_id, count), shell=True)
 
@@ -84,35 +84,35 @@ class SingleChlsMeasurer:
 
         print("start process {}".format(lite_app_id))
 
-        self.install_apk(full_app_path, full_app_id)
-        time_count = 0
-        while True:
-            print("time count:", time_count)
-            if time_count > self.run_time / 10:
-                break
+        if self.install_apk(full_app_path, full_app_id):
+            time_count = 0
+            while True:
+                print("time count:", time_count)
+                if time_count > self.run_time / 10:
+                    break
 
-            start_time = time.time()
-            self.run_by_monkey(full_app_id, self.run_time - int(round(time_count, 1) * 10))
-            end_time = time.time()
+                start_time = time.time()
+                self.run_by_monkey(full_app_id, self.run_time - int(round(time_count, 1) * 10))
+                end_time = time.time()
 
-            time_count += end_time - start_time
-        print("spend time count", time_count)
-        self.uninstall_apk(full_app_id)
+                time_count += end_time - start_time
+            print("spend time count", time_count)
+            self.uninstall_apk(full_app_id)
         self.get_charles_result(lite_app_id, full_app_id)
 
-        self.install_apk(lite_app_path, lite_app_id)
-        time_count = 0
-        while True:
-            if time_count > self.run_time / 10:
-                break
+        if self.install_apk(lite_app_path, lite_app_id):
+            time_count = 0
+            while True:
+                if time_count > self.run_time / 10:
+                    break
 
-            start_time = time.time()
-            self.run_by_monkey(lite_app_id, self.run_time - int(round(time_count, 1) * 10))
-            end_time = time.time()
+                start_time = time.time()
+                self.run_by_monkey(lite_app_id, self.run_time - int(round(time_count, 1) * 10))
+                end_time = time.time()
 
-            time_count += end_time - start_time
-        print("spend time count", time_count)
-        self.uninstall_apk(lite_app_id)
+                time_count += end_time - start_time
+            print("spend time count", time_count)
+            self.uninstall_apk(lite_app_id)
         self.get_charles_result(lite_app_id, lite_app_id)
 
         self.db.update_xapk(lite_app_id, 10)

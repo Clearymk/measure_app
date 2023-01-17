@@ -63,7 +63,7 @@ class DataBase(object):
         cursor = self.mysql.cursor()
         cursor.execute("select lite_app_id, full_app_id "
                        "from lite_app.app_measure "
-                       "where id >= 131 and id <= 260 and xapk != 10")
+                       "where id >= 131 and id <= 260 and (xapk != 10 or xapk is null)")
         return cursor.fetchall()
 
     def launch_time_task(self):
